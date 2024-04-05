@@ -1,6 +1,3 @@
-from environments.acc import ACC
-from environments.car_racing import CarRacing
-
 # gymnasium env
 from environments.gymnasium_acc import Gymnasium_ACC
 from environments.gymnasium_obstacle import GymnasiumObstacle
@@ -30,13 +27,6 @@ from environments.gymnasium_cartpole_move_simulate import GymnasiumCartPoleMoveS
 from environments.gymnasium_cartpole_swing_simulate import GymnasiumCartPoleSwingSimulate
 from environments.gymnasium_tora_simulate import Gymnasium_ToraSimulate
 from environments.gymnasium_lalo_simulate import Gymnasium_LaloSimulate
-
-
-from environments.mountain_car import MountainCar
-from environments.noisy_road import NoisyRoad
-from environments.noisy_road_2d import NoisyRoad2D
-from environments.road_2d import Road2D
-
 
 def get_env(env_name: str):
     # import pdb 

@@ -1,7 +1,5 @@
 import gymnasium as gym
 import numpy as np
-import onnx
-import onnx2torch
 import torch
 from matplotlib import pyplot as plt
 from stable_baselines3 import SAC
@@ -69,54 +67,6 @@ class seq_linear:
                     plt.plot(complete_path[:, x].reshape(-1))
                 plt.savefig(f"linear_path_{x}.png")
         return np.array(linear_paths)
-
-
-class neural_model_from_onnx:
-    def __init__(self, onnx_file):
-        self.onnx_model = onnx.load(onnx_file)
-        self.torch_model = onnx2torch.convert(self.onnx_model)
-
-    def get_action(self, o, t):
-        o = np.float32(o.reshape(1, -1))
-        obs = torch.from_numpy(o)
-        return self.torch_model(obs).data.numpy().ravel()
-
-    def sample_from_initial_states(self, initial_states, env_str, horizon, plot=False):
-        gym_env = gym.make(env_str)
-        neural_paths = []
-        complete_paths = []
-        sample_interval = 10
-        for idx, initial_state in enumerate(initial_states):
-            print(idx)
-            gym_env.reset()
-            gym_env.env.state = initial_state
-            obs = initial_state
-            path = [obs]
-            complete_path = [obs]
-            done = False
-            t = 0
-
-            while t < horizon and done is not True:
-                action = self.get_action(obs, t)
-                obs, r, done, _ = gym_env.step(action)
-                if (t + 1) % sample_interval == 0:
-                    path.append(obs)
-                complete_path.append(obs)
-                t += 1
-            complete_paths.append(complete_path)
-            neural_paths.append(path)
-
-        # import pdb
-        # pdb.set_trace()
-        if plot:
-            complete_paths = np.array(complete_paths)
-            dims = len(complete_paths[0][0])
-            for x in range(0, dims):
-                plt.cla()
-                for complete_path in complete_paths:
-                    plt.plot(complete_path[:, x].reshape(-1))
-                plt.savefig(f"neural_path_{x}.png")
-        return np.array(neural_paths)
 
 
 class neural_model:
