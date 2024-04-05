@@ -1,2 +1,0 @@
-total query count 5000
-total nerual count 4972

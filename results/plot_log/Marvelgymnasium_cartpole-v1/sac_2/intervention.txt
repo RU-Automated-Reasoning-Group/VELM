@@ -1,4 +1,0 @@
-total query count 5000
-total nerual count 4271
-total query count 5000
-total nerual count 4346
