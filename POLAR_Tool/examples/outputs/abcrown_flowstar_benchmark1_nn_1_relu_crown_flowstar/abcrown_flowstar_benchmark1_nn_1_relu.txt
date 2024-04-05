@@ -1,3 +1,0 @@
-Experiment name: benchmark1
-Complete: 31/35
-Total time: 230.07176303863525

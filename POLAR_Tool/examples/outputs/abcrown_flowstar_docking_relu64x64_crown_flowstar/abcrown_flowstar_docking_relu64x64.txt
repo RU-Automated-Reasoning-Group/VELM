@@ -1,3 +1,0 @@
-Experiment name: docking
-Complete: 10/120
-Total time: 1968.7122008800507
