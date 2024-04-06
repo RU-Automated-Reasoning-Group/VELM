@@ -26,6 +26,9 @@ class DSO(nn.Module):
             },
             "training": {"n_samples": 150000, "n_cores_batch" : 4},
         }
+        if args.env == "acc":
+            self.dso_config["task"]["metric"] = "inv_nmse_noise"
+            self.dso_config["task"]["metric_params"] = [1.0, 5.0]
         self.dso_models = [
             DeepSymbolicRegressor(config=self.dso_config) for _ in range(args.state_dim)
         ]

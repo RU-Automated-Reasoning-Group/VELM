@@ -8,11 +8,13 @@ import main_stable_baseline
 import utils.arguments
 
 def run_single_benchmark(benchmark: str):
-    # try:
+    try:
         train_args = utils.arguments.env_to_train_args(benchmark)
         main_stable_baseline.train(train_args)
-    # except:
-        # print(f"{benchmark} exited unexpectedly")
+    except main_stable_baseline.FinishException:
+        return
+    except:
+        print(f"{benchmark} exited unexpectedly")
 
 def run_one_row(row: int):
     row2bench = {
@@ -44,10 +46,10 @@ def plot_one_env(ax, row, column, env_name, color="blue"):
         ax[row][column].plot(xs, rwds, color=color)
         ax[row+1][column].plot(xs, violations, color=color)
 
-        ax[row][column].title(env_name)
-        ax[row][column].ylabel("total rewards")
-        ax[row+1][column].ylabel("# unsafe steps")
-        ax[row+1][column].xlabel("# of episodes in total")
+        ax[row][column].set_title(env_name)
+        ax[row][column].set_ylabel("total rewards")
+        ax[row+1][column].set_ylabel("# unsafe steps")
+        ax[row+1][column].set_xlabel("# of episodes in total")
     else:
         print(f"{env_name}: logs not found")
 
@@ -82,6 +84,57 @@ def eval_plot():
 
     plot_one_env(ax, 6, 1, "cartpole_swing")
     plot_one_env(ax, 6, 2, "lalo")
+
+    ax[0, 0].set_ylim([-10, 0])
+    ax[0, 0].set_xlim([0, 200])
+    ax[1, 0].set_xlim([0, 200])
+    ax[1, 0].set_ylim([-100, 1000])
+
+    ax[0, 1].set_ylim([200, 600])
+    ax[0, 1].set_xlim([0, 200])
+    ax[1, 1].set_xlim([0, 200])
+    ax[1, 1].set_ylim([-100, 700])
+
+    ax[0, 2].set_ylim([-4000, -300])
+    ax[0, 2].set_xlim([0, 400])
+    ax[1, 2].set_xlim([0, 400])
+    ax[1, 2].set_ylim([-100, 700])
+
+    ax[0, 3].set_ylim([-2000, 100])
+    ax[0, 3].set_xlim([0, 200])
+    ax[1, 3].set_xlim([0, 200])
+    # ax[1, 3].set_ylim([-100, 10000])
+
+    ax[3, 0].set_ylim([-3000, 0])
+    ax[3, 0].set_xlim([0, 200])
+    ax[4, 0].set_xlim([0, 200])
+    # ax[4, 0].set_ylim([-30, 400])
+
+    ax[3, 1].set_ylim([-6000, 0])
+    ax[3, 1].set_xlim([0, 100])
+    ax[4, 1].set_xlim([0, 100])
+    ax[4, 1].set_ylim([-100, 2500])
+
+    ax[3, 2].set_ylim([-6000, -1500])
+    ax[3, 2].set_xlim([0, 600])
+    ax[4, 2].set_xlim([0, 600])
+    ax[4, 2].set_ylim([-100, 1500])
+
+
+    ax[3, 3].set_ylim([-2000, 100])
+    ax[3, 3].set_xlim([0, 300])
+    ax[4, 3].set_xlim([0, 300])
+    ax[4, 3].set_ylim([-100, 7000])
+
+    ax[6, 1].set_ylim([-4000, 1000])
+    ax[6, 1].set_xlim([0, 300])
+    ax[7, 1].set_xlim([0, 300])
+    ax[7, 1].set_ylim([-100, 10000])
+
+    ax[6, 2].set_ylim([-1000, 0])
+    ax[6, 2].set_xlim([0, 300])
+    ax[7, 2].set_xlim([0, 300])
+    ax[7, 2].set_ylim([-100, 2000])
 
     fig.align_ylabels()
     plt.subplots_adjust(wspace=0.5)

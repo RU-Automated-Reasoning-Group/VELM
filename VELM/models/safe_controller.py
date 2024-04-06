@@ -46,7 +46,7 @@ class safe_agent:
     def sample(
         self,
         args,
-        tracker,
+        logger,
         replay_buffer,
         env_info,
         simulated_env_info,
@@ -144,6 +144,10 @@ class safe_agent:
         plt.savefig(fig_name)
         print(f"mean episode reward for safe agent is {np.mean(episodes_rwd)}")
         print(f"unsafe count is {unsafe_count}")
+
+        # add stats to logger
+        for (one_rwd, one_violation) in zip(episodes_rwd, episodes_violations):
+            logger.manual_add(one_rwd, one_violation)
 
         # logging safe violation stats for plot
         plot_log = f"./results/plot_log/{env_info.env_name}/sac_{self.current_version}"

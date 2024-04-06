@@ -3,12 +3,15 @@ import os
 import pathlib
 import pdb
 import sys
-import torch
+import time
+import copy
+
 import gymnasium as gym
-from collections import namedtuple
 import numpy as np
+import tabulate
 from pyoperon.sklearn import SymbolicRegressor
-from stable_baselines3 import PPO, SAC
+from stable_baselines3.common.logger import Logger, make_output_format
+from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import (
     CallbackList,
     EvalCallback,
@@ -27,15 +30,55 @@ from models.safe_controller import safe_agent
 from utils.arguments import env_to_train_args
 from utils.gym_env import GymEnv
 from verification.VEL.lagrange_lib import run_lagrange
-from verification.VEL.safe_violation_callback import (
-    SafeViolationCallback,
-    safety_violation_tracker,
-)
-import time
-import tabulate
+from verification.VEL.safe_violation_callback import SafeViolationLogCallback
 
-# from sbx import SAC
-# from sbx.sac.policies import SACPolicy
+operon_list = ["cartpole", "tora", "lalo", "cartpole_move", "cartpole_swing"]
+
+
+class FinishException(Exception):
+    pass
+
+
+class OurLogger(Logger):
+    def __init__(self, folder, output_formats, max_episodes, env_name):
+        super().__init__(folder, output_formats)
+        self.reward_logs = []
+        self.violation_logs = []
+        self.max_episodes = max_episodes
+        self.protected_episodes = 0
+        self.env_name = env_name
+
+    def record(self, key, value, exclude=None):
+        super().record(key, value, exclude)
+        if key == "rollout/ep_rew_mean":
+            self.reward_logs.append(value)
+            if len(self.violation_logs) == 0:
+                self.violation_logs.append(0)
+            else:
+                self.violation_logs.append(self.violation_logs[-1])
+        
+        self.check_terminate()
+
+    def dump(self, step=0):
+        super().dump(step)
+
+    def check_terminate(self):
+        if len(self.reward_logs) >= self.max_episodes and self.protected_episodes >= 25:
+            self.final_write()
+            raise FinishException()
+
+    def final_write(self):
+        assert len(self.violation_logs) == len(self.reward_logs)
+        os.makedirs("logs", exist_ok=True)
+        with open(f"logs/{self.env_name}.txt", "w") as f:
+            for (rwd, violation) in zip(self.reward_logs, self.violation_logs):
+                f.write(f"{rwd} {violation}\n")
+
+    def manual_add(self, rwd, violations):
+        self.reward_logs.append(rwd)
+        self.violation_logs.append(violations + self.violation_logs[-1])
+        self.protected_episodes += 1
+        self.check_terminate()
 
 
 def load_model(path, iters_run):
@@ -57,7 +100,7 @@ def compute_safe_agent(
     stds,
     neural_agent,
     benchmark_config_dict: dict,
-    current_version: int
+    current_version: int,
 ):
     simulated_env = make_simulated_env(
         args.random, simulated_env_info.env_name, learned_model=learned_model, stds=stds
@@ -111,7 +154,7 @@ def compute_safe_agent(
         safe_sets,
         horizon=benchmark_config_dict["horizon"],
         interval=1,
-        current_version=current_version
+        current_version=current_version,
     )
 
 
@@ -161,32 +204,11 @@ def train(args):
     env_info, simulated_env_info = utils.get_env.get_env(args.env)
     env = gym.make(env_info.env_name)
 
+    # set the run id to 1
+    current_version = 1
+
     # define call backs
-    safe_violation_logdir = f"results/safe_violation/{env_info.env_name}"
-    safe_violation_path = pathlib.Path(safe_violation_logdir)
-    safe_violation_path.mkdir(parents=True, exist_ok=True)
-    current_version = len(os.listdir(safe_violation_path)) + 1
-
-    final_safe_violation_logdir = os.path.join(
-        safe_violation_logdir, f"sac_{current_version}"
-    )
-
-    tracker = safety_violation_tracker(final_safe_violation_logdir)
-    safeviolation_callback = SafeViolationCallback(tracker)
-
-    # eval_callback = EvalCallback(test_env, eval_freq=1000, deterministic=True, best_model_save_path=f"results/saved_agents/{env_info.env_name}/sac_warm_checkpoint")
-
-    # stop_train_callback = StopTrainingOnNoModelImprovement(
-    #     max_no_improvement_evals=25, verbose=1
-    # )
-
-    # eval_callback_stop = EvalCallback(
-    #     test_env,
-    #     eval_freq=1000,
-    #     deterministic=True,
-    #     callback_after_eval=stop_train_callback,
-    # )
-    # callback_list = CallbackList([safeviolation_callback, eval_callback, eval_callback_stop])
+    safeviolation_callback = SafeViolationLogCallback(args.horizon)
     callback_list = CallbackList([safeviolation_callback])
 
     # start warm up training
@@ -195,31 +217,38 @@ def train(args):
         neural_agent = SAC.load(f_name)
         print(f"loading neural agent from {f_name}")
     else:
-        # pdb.set_trace()
         # in warm up episodes, no linear controllers are involved and only trained on real data
         policy_kwargs = {"net_arch": [args.arch, args.arch]}
         neural_agent = SAC(
             SACPolicy,
             env,
             verbose=1,
-            tensorboard_log=f"./results/logs/{env_info.env_name}",
             policy_kwargs=policy_kwargs,
             buffer_size=1000000,
             batch_size=args.batch_size,
             use_sde=True,
-            # device="cpu",
+            device="auto",
             learning_rate=args.lr,
             stats_window_size=1,
         )
-        # neural_agent = PPO("MlpPolicy", env, verbose=1, tensorboard_log=f"./results/logs/{env_info.env_name}", policy_kwargs=policy_kwargs)
-        # pdb.set_trace()
-        if args.env not in ["cartpole", "tora", "lalo", "cartpole_move", "cartpole_swing"]:
+        logger = OurLogger(
+            folder=None,
+            output_formats=[make_output_format("stdout", ".")],
+            max_episodes=args.max_episodes,
+            env_name=args.env,
+        )
+        neural_agent.set_logger(logger)
+
+        # gather data to train the first environment model
+        if args.env not in operon_list:
             neural_agent.learn(
                 total_timesteps=args.warm_up_steps,
                 progress_bar=True,
-                tb_log_name="sac",
                 callback=callback_list,
                 log_interval=1,
+            )
+            neural_agent.logger.violation_logs = copy.deepcopy(
+                safeviolation_callback.safe_violations
             )
         else:
             buffer = []
@@ -251,19 +280,10 @@ def train(args):
                     state = next_state
                 episodes_rwd.append(episode_rwd)
                 episodes_unsafe.append(unsafe)
-            
-            with open(os.path.join(final_safe_violation_logdir, "start.txt"), "w") as f:
-                f.write(" ".join([str(x) for x in episodes_rwd]))
-                f.write("\n")
-                f.write(" ".join([str(x) for x in episodes_unsafe]))
-                f.write("\n")
 
             print("episodes_rwd", episodes_rwd)
             print("episodes unsafe", episodes_unsafe)
             # exit()
-        # neural_agent.save(
-        #     f"results/saved_agents/{env_info.env_name}/sac_warm_checkpoint"
-        # )
 
     # Use dso to learn the dynamic model
     dy_t0 = time.time()
@@ -282,42 +302,40 @@ def train(args):
         else:
             learned_stds = None
     else:
+        # learn a new environment model
         if args.sr_method == "DSO":
-            # learn a new model
             dso = DSO(args)
-            # if args.env == "acc":
-            #     observations = torch.tensor(observations)
-            #     next_observations = torch.tensor(next_observations)
-            #     actions = torch.tensor(actions)
-            #     Custom_buffers = namedtuple("Custom_buffers", ["observations", "next_observations", "actions"])
-            #     samples = Custom_buffers(observations=observations, next_observations=next_observations, actions=actions)
-            #     # pdb.set_trace()
-            # else:
             replay_buffer = neural_agent.replay_buffer
             samples = replay_buffer.sample(env_info.lagrange_config["dso_dataset_size"])
-                # pdb.set_trace()
-            # pdb.set_trace()
             learned_dynamic_model, learned_stds = dso.learn_dynamic_model(
                 samples, random=args.random
             )
         elif args.sr_method == "operon":
             reg = SymbolicRegressor(
-                    allowed_symbols='add,sub,mul,div,constant,variable,sin,cos',
-                    offspring_generator='basic',
-                    local_iterations=5,
-                    max_length=50,
-                    initialization_method='btc',
-                    n_threads=10,
-                    objectives = ['mse'],
-                    symbolic_mode=False,
-                    model_selection_criterion='mean_squared_error',
-                    random_state=4,
-                    generations=10000,
-                    population_size=5000
-                    )
-            if args.env not in ["cartpole", "tora", "lalo", "cartpole_move", "cartpole_swing"]:
+                allowed_symbols="add,sub,mul,div,constant,variable,sin,cos",
+                offspring_generator="basic",
+                local_iterations=5,
+                max_length=50,
+                initialization_method="btc",
+                n_threads=10,
+                objectives=["mse"],
+                symbolic_mode=False,
+                model_selection_criterion="mean_squared_error",
+                random_state=4,
+                generations=10000,
+                population_size=5000,
+            )
+            if args.env not in [
+                "cartpole",
+                "tora",
+                "lalo",
+                "cartpole_move",
+                "cartpole_swing",
+            ]:
                 replay_buffer = neural_agent.replay_buffer
-                samples = replay_buffer.sample(env_info.lagrange_config["dso_dataset_size"])
+                samples = replay_buffer.sample(
+                    env_info.lagrange_config["dso_dataset_size"]
+                )
                 X, y_list = DSO.process_for_dso(samples)
             else:
                 x_list, a_list, y_list = zip(*buffer)
@@ -337,7 +355,9 @@ def train(args):
                 Y = y_list[i]
                 reg.fit(X, Y)
                 # pdb.set_trace()
-                learned_dynamic_model.append(parse_expr(reg.get_model_string(reg.model_, 5)))
+                learned_dynamic_model.append(
+                    parse_expr(reg.get_model_string(reg.model_, 5))
+                )
             learned_stds = None
 
             pdb.set_trace()
@@ -351,7 +371,9 @@ def train(args):
             env_info.env_name, learned_dynamic_model, stds=learned_stds
         )
         # pdb.set_trace()
-    print(f"========= Learning Dynamic Time Is {time.time() - dy_t0} seconds ==============")
+    print(
+        f"========= Learning Dynamic Time Is {time.time() - dy_t0} seconds =============="
+    )
     all_dy_time = all_dy_time + (time.time() - dy_t0)
 
     # create the simulated env
@@ -389,7 +411,7 @@ def train(args):
             print("training on real data")
             new_data = safe_agent.sample(
                 args,
-                tracker,
+                logger,
                 neural_agent.replay_buffer,
                 env_info,
                 simulated_env_info,
@@ -401,9 +423,16 @@ def train(args):
             )
             # pdb.set_trace()
             safe_agent.report()
-            print(f"========= Learning Dynamic Time Is {time.time() - safe_t0} seconds ==============")
+            print(
+                f"========= Learning Dynamic Time Is {time.time() - safe_t0} seconds =============="
+            )
             all_safe_time = all_safe_time + (time.time() - safe_t0)
-            time_table = [["total time", time.time() - all_t0], ["safe time", all_safe_time], ["model time", all_dy_time], ["VELM time", all_safe_time + all_dy_time]]
+            time_table = [
+                ["total time", time.time() - all_t0],
+                ["safe time", all_safe_time],
+                ["model time", all_dy_time],
+                ["VELM time", all_safe_time + all_dy_time],
+            ]
             print(tabulate.tabulate(time_table))
 
             # reg = SymbolicRegressor(
@@ -453,7 +482,6 @@ def train(args):
             # ):l
             #     # todo: improve the dso model
             #     pass
-
         else:
             train_on_real_data = True
 
@@ -461,14 +489,12 @@ def train(args):
             stop_train_callback = StopTrainingOnNoModelImprovement(
                 max_no_improvement_evals=args.patience, verbose=1
             )
-
             eval_callback = EvalCallback(
                 test_simulated_env,
                 eval_freq=args.eval_freq,
                 deterministic=True,
                 callback_after_eval=stop_train_callback,
             )
-
             plot_callback = utils.plot.PlotCallback(
                 current_version,
                 env_info,
@@ -482,25 +508,29 @@ def train(args):
                 eval_freq=args.eval_freq,
                 deterministic=True,
                 callback_after_eval=plot_callback,
-                n_eval_episodes=1
+                n_eval_episodes=1,
             )
-
             callback_list = CallbackList([eval_callback_2, eval_callback])
 
             neural_agent.set_env(simulated_env)
 
-            new_run = (args.env in ["cartpole", "tora", "lalo", "cartpole_move", "cartpole_swing"]) and first
+            new_run = (args.env in operon_list) and first
             first = False
             neural_agent.learn(
-                args.individual_learn_steps,
+                total_timesteps=args.individual_learn_steps,
                 reset_num_timesteps=new_run,
-                tb_log_name="sac",
                 progress_bar=True,
                 callback=callback_list,
                 log_interval=1,
             )
-            time_table = [["total time", time.time() - all_t0], ["safe time", all_safe_time], ["model time", all_dy_time], ["VELM time", all_safe_time + all_dy_time]]
+            time_table = [
+                ["total time", time.time() - all_t0],
+                ["safe time", all_safe_time],
+                ["model time", all_dy_time],
+                ["VELM time", all_safe_time + all_dy_time],
+            ]
             print(tabulate.tabulate(time_table))
+            pdb.set_trace()
 
 
 if __name__ == "__main__":

@@ -26,4 +26,5 @@ WORKDIR /VELM/POLAR_Tool/POLAR
 RUN make clean && make -j 4
 
 WORKDIR /VELM
+RUN bash compile.sh
 

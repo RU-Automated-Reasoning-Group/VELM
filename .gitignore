@@ -4,3 +4,4 @@ old_SRL_ENV/*
 controller_*_*
 neural_path_*.png
 .vscode/*
+VELM/results/*

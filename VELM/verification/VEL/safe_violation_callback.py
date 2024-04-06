@@ -16,6 +16,7 @@ class safety_violation_tracker:
             "safe_violation", self.num_violation, self.real_timestpes
         )
 
+
 class SafeViolationCallback(BaseCallback):
     """
     A custom callback that derives from ``BaseCallback``.
@@ -30,4 +31,27 @@ class SafeViolationCallback(BaseCallback):
     def _on_step(self) -> bool:
         safe = not self.training_env.envs[0].unsafe()
         self.tracker.add_step(safe)
+        return True
+
+
+class SafeViolationLogCallback(BaseCallback):
+    """
+    A custom callback that derives from ``BaseCallback``.
+
+    :param verbose: Verbosity level: 0 for no output, 1 for info messages, 2 for debug messages
+    """
+
+    def __init__(self, episode_length, verbose=0):
+        super(SafeViolationLogCallback, self).__init__(verbose)
+        self.episode_length = episode_length
+        self.safe_violations = []
+        self.unsafe = 0
+
+    def _on_step(self) -> bool:
+
+        if self.training_env.envs[0].unsafe():
+            self.unsafe += 1
+
+        if self.num_timesteps % self.episode_length == 0:
+            self.safe_violations.append(self.unsafe)
         return True

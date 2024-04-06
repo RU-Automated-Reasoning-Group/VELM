@@ -16,8 +16,8 @@
 
       // Metric to be used for the reward function. See regression.py for
       // supported metrics.
-      "metric" : "inv_nmse_noise",
-      "metric_params" : [1.0, 5.0],
+      "metric" : "inv_nrmse",
+      "metric_params" : [1.0],
 
       // Optional alternate metric to be used at evaluation time.
       "extra_metric_test" : null,

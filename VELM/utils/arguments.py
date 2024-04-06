@@ -15,6 +15,8 @@ def get_argparser() -> argparse.ArgumentParser:
     parser.add_argument("--env", type=str, help="environment choice")
     parser.add_argument("--state_dim", type=int, help="number of dimensions in state")
 
+    parser.add_argument("--horizon", type=int, help="length of each episode", required=True)
+    parser.add_argument("--max_episodes", type=int, help="maximum episodes for plot purpose", required=True)
     # safe learning algorithm
     parser.add_argument(
         "--warm_up_steps",
@@ -96,10 +98,10 @@ def get_argparser() -> argparse.ArgumentParser:
 
 def get_args(env: str) -> List:
     args_dict = {
-        "acc": "--env acc --state_dim 2 --warm_up_steps 600 --total_steps 1500000 --individual_learn_steps 150000 --random --patience 5 --eval_freq 1500 --load_dynamic_model".split(),
+        "acc": "--env acc --state_dim 2 --warm_up_steps 600 --total_steps 1500000 --individual_learn_steps 150000 --random --patience 5 --eval_freq 1500 --horizon 300 --max_episodes 200".split(),
         "obstacle": "--env obstacle --state_dim 4 --warm_up_steps 400 --total_steps 150000 --individual_learn_steps 150000 --eval_freq 1200".split(),
-        "obstacle_mid": "--env obstacle_mid --state_dim 4 --warm_up_steps 400 --total_steps 15000000 --individual_learn_steps 600000 --patience 10 --eval_freq 1200".split(),
-        "pendulum": "--env pendulum --state_dim 2 --warm_up_steps 200 --total_steps 150000 --individual_learn_steps 150000 --patience 3 --eval_freq 1000".split(),
+        "obstacle_mid": "--env obstacle_mid --state_dim 4 --warm_up_steps 400 --total_steps 15000000 --individual_learn_steps 600000 --patience 10 --eval_freq 1200 --horizon 200 --max_episodes 400".split(),
+        "pendulum": "--env pendulum --state_dim 2 --warm_up_steps 200 --total_steps 150000 --individual_learn_steps 150000 --patience 3 --eval_freq 1000 --horizon 100 --max_episodes 200".split(),
         "road": "--env road --state_dim 2 --warm_up_steps 300 --total_steps 150000 --individual_learn_steps 150000 --patience 10 --lr 1e-4".split(),
         "cartpole": "--env cartpole --state_dim 4 --warm_up_steps 800 --total_steps 150000 --individual_learn_steps 150000 --lr 1e-4 --sr_method operon --patience 10 --load_dynamic_model".split(), 
         "car_racing": "--env car_racing --state_dim 4 --warm_up_steps 400 --total_steps 1500000 --individual_learn_steps 600000 --patience 10 --eval_freq 1200 --load_dynamic_model".split(), 
