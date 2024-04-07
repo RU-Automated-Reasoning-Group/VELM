@@ -248,6 +248,7 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
 
         for i in range(0, len(learned_dynamic_model)):
             learned_dynamic_model[i] = str(learned_dynamic_model[i]).lower()
+            learned_dynamic_model[i] = learned_dynamic_model[i].replace("**", "^")
     else:
         assert False, "Unknown Symbolic Regression method"
 

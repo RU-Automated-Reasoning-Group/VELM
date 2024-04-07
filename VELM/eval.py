@@ -13,8 +13,11 @@ def run_single_benchmark(benchmark: str):
         main_stable_baseline.train(train_args)
     except main_stable_baseline.FinishException:
         return
-    except:
-        print(f"{benchmark} exited unexpectedly")
+    # except Exception as e:
+        # import pdb
+        # pdb.set_trace()
+        # print(e)
+        # print(f"{benchmark} exited unexpectedly")
 
 def run_one_row(row: int):
     row2bench = {
@@ -27,8 +30,8 @@ def run_one_row(row: int):
         run_single_benchmark(b)
 
 def run_main(start: int, end: int):
-    for row in range(start, end + 1):
-        run_one_row(row)
+    # for row in range(start, end + 1):
+        # run_one_row(row)
     
     eval_plot()
 
@@ -86,49 +89,49 @@ def eval_plot():
     plot_one_env(ax, 6, 2, "lalo")
 
     ax[0, 0].set_ylim([-10, 0])
-    ax[0, 0].set_xlim([0, 200])
-    ax[1, 0].set_xlim([0, 200])
+    ax[0, 0].set_xlim(left=0)
+    ax[1, 0].set_xlim(left=0)
     ax[1, 0].set_ylim([-100, 1000])
 
     ax[0, 1].set_ylim([200, 600])
-    ax[0, 1].set_xlim([0, 200])
-    ax[1, 1].set_xlim([0, 200])
+    ax[0, 1].set_xlim(left=0)
+    ax[1, 1].set_xlim(left=0)
     ax[1, 1].set_ylim([-100, 700])
 
     ax[0, 2].set_ylim([-4000, -300])
-    ax[0, 2].set_xlim([0, 400])
-    ax[1, 2].set_xlim([0, 400])
+    ax[0, 2].set_xlim(left=0)
+    ax[1, 2].set_xlim(left=0)
     ax[1, 2].set_ylim([-100, 700])
 
     ax[0, 3].set_ylim([-2000, 100])
-    ax[0, 3].set_xlim([0, 200])
-    ax[1, 3].set_xlim([0, 200])
-    # ax[1, 3].set_ylim([-100, 10000])
+    ax[0, 3].set_xlim(left=0)
+    ax[1, 3].set_xlim(left=0)
+    ax[1, 3].set_ylim([-1000, 24000])
 
     ax[3, 0].set_ylim([-3000, 0])
-    ax[3, 0].set_xlim([0, 200])
-    ax[4, 0].set_xlim([0, 200])
-    # ax[4, 0].set_ylim([-30, 400])
+    ax[3, 0].set_xlim(left=0)
+    ax[4, 0].set_xlim(left=0)
+    ax[4, 0].set_ylim([-30, 850])
 
     ax[3, 1].set_ylim([-6000, 0])
-    ax[3, 1].set_xlim([0, 100])
-    ax[4, 1].set_xlim([0, 100])
+    ax[3, 1].set_xlim(left=0)
+    ax[4, 1].set_xlim(left=0)
     ax[4, 1].set_ylim([-100, 2500])
 
     ax[3, 2].set_ylim([-6000, -1500])
-    ax[3, 2].set_xlim([0, 600])
-    ax[4, 2].set_xlim([0, 600])
+    ax[3, 2].set_xlim(left=0)
+    ax[4, 2].set_xlim(left=0)
     ax[4, 2].set_ylim([-100, 1500])
 
 
     ax[3, 3].set_ylim([-2000, 100])
-    ax[3, 3].set_xlim([0, 300])
-    ax[4, 3].set_xlim([0, 300])
+    ax[3, 3].set_xlim(left=0)
+    ax[4, 3].set_xlim(left=0)
     ax[4, 3].set_ylim([-100, 7000])
 
     ax[6, 1].set_ylim([-4000, 1000])
-    ax[6, 1].set_xlim([0, 300])
-    ax[7, 1].set_xlim([0, 300])
+    ax[6, 1].set_xlim(left=0)
+    ax[7, 1].set_xlim(left=0)
     ax[7, 1].set_ylim([-100, 10000])
 
     ax[6, 2].set_ylim([-1000, 0])
@@ -146,5 +149,6 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--end", type=int, default=3)
     args = parser.parse_args()
+    # run_single_benchmark("cartpole_swing")
     run_main(args.start, args.end)
     

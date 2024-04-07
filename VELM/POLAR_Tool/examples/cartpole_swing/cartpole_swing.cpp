@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 	 * Initial set can be a box which is represented by a vector of intervals.
 	 * The i-th component denotes the initial set of the i-th state variable.
 	 */
-	int steps = 200;
+	int steps = 100;
 	Interval init_x1(0.0, 0.0), init_x2(0.0, 0.0), init_x3(0.0, 0.0), init_x4(0.0, 0.0);
 	Interval init_x5(0);
 	std::vector<Interval> X0;
