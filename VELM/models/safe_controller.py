@@ -89,14 +89,14 @@ class safe_agent:
                 # f"next safe set is {self.safe_sets[self.current_step // self.interval - 1]}"
                 # )
                 # print(f"next state safety is {safe}")
-                replay_buffer.add(
-                    np.array([state]),
-                    np.array([next_state]),
-                    np.array([action]),
-                    rwd,
-                    done,
-                    [info],
-                )
+                # replay_buffer.add(
+                #     np.array([state]),
+                #     np.array([next_state]),
+                #     np.array([action]),
+                #     rwd,
+                #     done,
+                #     [info],
+                # )
 
                 # plot
                 color = "orange" if intervented else "blue"

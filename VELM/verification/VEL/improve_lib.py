@@ -5,6 +5,8 @@ import numpy as np
 warnings.filterwarnings("ignore")
 import multiprocess as mp
 
+class EvalControllerFailure(Exception):
+    pass
 
 def _try_multiprocess(func, input_dict_list, num_cpu, max_process_time, max_timeouts):
 
@@ -152,7 +154,9 @@ def calculate_rewards_both_direction_lagrange_safe_and_reach(
     input_dict_list.append(
         {"controller": controller, "cmd_first_part": cmd_first_part, "index": index}
     )
-    results = _try_multiprocess(eval_controller, input_dict_list, 70, 60000, 60000)
+    results = _try_multiprocess(eval_controller, input_dict_list, 70, 60000, 1)
+    if results is None:
+        raise EvalControllerFailure()
     combined, safe_losses, reach_losses = list(zip(*results))
     return (
         combined[0:N_of_directions],
