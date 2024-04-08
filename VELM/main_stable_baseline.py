@@ -213,12 +213,22 @@ def check_model_accurate(
 def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
     # learn a new environment model
     if args.sr_method == "DSO":
-        dso = DSO(args)
-        replay_buffer = neural_agent.replay_buffer
-        samples = replay_buffer.sample(env_info.lagrange_config["dso_dataset_size"])
-        learned_dynamic_model, learned_stds = dso.learn_dynamic_model(
-            samples, random=args.random
-        )
+        assert args.random
+        all_models = []
+        all_stds = []
+        for i in range(5):
+            dso = DSO(args)
+            replay_buffer = neural_agent.replay_buffer
+            samples = replay_buffer.sample(env_info.lagrange_config["dso_dataset_size"])
+            learned_dynamic_model, learned_stds = dso.learn_dynamic_model(
+                samples, random=args.random
+            )
+            all_models.append(learned_dynamic_model)
+            all_stds.append(learned_stds)
+        
+        best_model_idx = np.argmin([np.mean(stds) for stds in all_stds])
+        learned_dynamic_model = all_models[best_model_idx]
+        learned_stds = all_stds[best_model_idx]
     elif args.sr_method == "operon":
         reg = SymbolicRegressor(
             allowed_symbols="add,sub,mul,div,constant,variable,sin,cos",

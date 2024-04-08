@@ -150,9 +150,9 @@ def eval_plot():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=int, default=0)
-    parser.add_argument("--end", type=int, default=0)
+    parser.add_argument("--row", type=int, default=0)
     args = parser.parse_args()
-    # run_single_benchmark("car_racing")
-    run_main(args.start, args.end)
+    # run_single_benchmark("acc")
+    # exit()
+    run_main(args.row, args.row + 1)
     

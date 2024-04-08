@@ -24,7 +24,7 @@ Follow the following instructions to build a new Docker image or use our provide
 ### Build a New Docker Image
 If the provided Docker image doesn't work for you for any reason, you can build a new image for you system.
 
-1. Use the following command to build a image called velm (This process takes about 12 minutes)
+1. Use the following command to build a image called velm (This process takes about 20 minutes)
     ```
     docker build -t velm .
     ```
