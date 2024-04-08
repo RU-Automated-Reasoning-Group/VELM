@@ -76,7 +76,7 @@ class OurLogger(Logger):
         super().dump(step)
 
     def check_terminate(self):
-        if len(self.reward_logs) >= self.max_episodes and self.protected_episodes >= 0:
+        if len(self.reward_logs) >= self.max_episodes and self.protected_episodes >= 1:
             self.final_write()
             raise FinishException()
 
@@ -438,7 +438,7 @@ def train(args):
                     simulated_env_info,
                     learned_dynamic_model,
                     learned_stds,
-                    episodes=25,
+                    episodes=2,
                     plot_unsafe_set=env_info.plot_other_components,
                     plot_state_to_xy=env_info.plot_state_to_xy,
                 )
