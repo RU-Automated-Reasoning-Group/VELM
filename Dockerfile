@@ -1,11 +1,12 @@
 FROM --platform=linux/x86_64 ubuntu:22.04
 
-COPY VELM /VELM
-
 # install linux packages and python
 RUN apt update
 RUN apt -y install m4 libgmp3-dev libmpfr-dev libmpfr-doc libgsl-dev gsl-bin bison flex gnuplot-x11 libglpk-dev gcc g++ libopenmpi-dev python3.10-dev python3-pip libgl1 libglib2.0-0 libsm6 libxrender1 libxext6 libcairo2-dev libjpeg-dev libgif-dev pkg-config libgirepository1.0-dev libdbus-1-3 libdbus-1-dev
 RUN echo "alias python3='python3.10'" >> ~/.bashrc
+
+# copy our code
+COPY VELM /VELM
 
 # # install python packages
 WORKDIR /VELM/
