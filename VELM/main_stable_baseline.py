@@ -34,7 +34,18 @@ from utils.gym_env import GymEnv
 from verification.VEL.lagrange_lib import run_lagrange
 from verification.VEL.safe_violation_callback import SafeViolationLogCallback
 
-operon_list = ["cartpole", "tora", "lalo", "cartpole_move", "cartpole_swing"]
+operon_list = [
+    "cartpole",
+    "tora",
+    "lalo",
+    "cartpole_move",
+    "cartpole_swing",
+    "pendulum",
+    "road_2d",
+    "obstacle",
+    "obstacle_mid",
+    "road_2d",
+]
 
 
 class FinishException(Exception):
@@ -65,7 +76,7 @@ class OurLogger(Logger):
         super().dump(step)
 
     def check_terminate(self):
-        if len(self.reward_logs) >= self.max_episodes and self.protected_episodes >= 25:
+        if len(self.reward_logs) >= self.max_episodes and self.protected_episodes >= 0:
             self.final_write()
             raise FinishException()
 
@@ -451,11 +462,16 @@ def train(args):
                 must_learn_new_model = True
             if not args.random:
                 # currently doesn't check with std
-                if not check_model_accurate(learned_dynamic_model, new_data) or must_learn_new_model:
+                if (
+                    not check_model_accurate(learned_dynamic_model, new_data)
+                    or must_learn_new_model
+                ):
                     if args.sr_method == "operon":
                         # learn a new model
                         print("===== Learning a new environment model ========")
-                        learned_dynamic_model, learned_stds = learn_environment_model(args, env_info, buffer=real_data.get_data_for_operon())
+                        learned_dynamic_model, learned_stds = learn_environment_model(
+                            args, env_info, buffer=real_data.get_data_for_operon()
+                        )
                         print("===== Constructing new simulated env ========")
                         simulated_env = make_simulated_env(
                             args.random,
@@ -471,7 +487,7 @@ def train(args):
                             stds=learned_stds,
                         )
                     else:
-                        assert False, "DSO model is not accurate"            
+                        assert False, "DSO model is not accurate"
         else:
             train_on_real_data = True
 

@@ -1,6 +1,7 @@
 import argparse
 import os
 import pathlib
+import gc
 
 import matplotlib.pyplot as plt
 
@@ -28,6 +29,7 @@ def run_one_row(row: int):
     bench = row2bench[row]
     for b in bench:
         run_single_benchmark(b)
+        gc.collect()
 
 def run_main(start: int, end: int):
     for row in range(start, end + 1):

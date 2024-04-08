@@ -90,7 +90,7 @@ def get_argparser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--sr_method", default="DSO", type=str, action="store", help="symbolic learning method [DSO or operon]"
+        "--sr_method", default="operon", type=str, action="store", help="symbolic learning method [DSO or operon]"
     )
 
     return parser
@@ -98,10 +98,10 @@ def get_argparser() -> argparse.ArgumentParser:
 
 def get_args(env: str) -> List:
     args_dict = {
-        "acc": "--env acc --state_dim 2 --warm_up_steps 600 --total_steps 1500000 --individual_learn_steps 150000 --random --patience 5 --eval_freq 1500 --horizon 300 --max_episodes 200".split(),
+        "acc": "--env acc --state_dim 2 --warm_up_steps 600 --total_steps 1500000 --individual_learn_steps 150000 --random --patience 5 --eval_freq 1500 --horizon 300 --max_episodes 200 --sr_method DSO".split(),
         "obstacle": "--env obstacle --state_dim 4 --warm_up_steps 400 --total_steps 150000 --individual_learn_steps 100000 --eval_freq 1200 --horizon 200 --max_episodes 200".split(),
-        "obstacle_mid": "--env obstacle_mid --state_dim 4 --warm_up_steps 400 --total_steps 150000 --individual_learn_steps 100000 --patience 10 --eval_freq 1200 --horizon 200 --max_episodes 400".split(),
-        "pendulum": "--env pendulum --state_dim 2 --warm_up_steps 200 --total_steps 150000 --individual_learn_steps 150000 --patience 3 --eval_freq 1000 --horizon 100 --max_episodes 200".split(),
+        "obstacle_mid": "--env obstacle_mid --state_dim 4 --warm_up_steps 400 --total_steps 150000 --individual_learn_steps 100000 --patience 10 --eval_freq 1200 --horizon 200 --max_episodes 300".split(),
+        "pendulum": "--env pendulum --state_dim 2 --warm_up_steps 200 --total_steps 150000 --individual_learn_steps 150000 --patience 3 --eval_freq 1000 --horizon 100 --max_episodes 200 --sr_method operon".split(),
         "road": "--env road --state_dim 2 --warm_up_steps 300 --total_steps 150000 --individual_learn_steps 150000 --patience 10 --lr 1e-4".split(),
         "cartpole": "--env cartpole --state_dim 4 --warm_up_steps 800 --total_steps 100000 --individual_learn_steps 100000 --lr 1e-4 --sr_method operon --patience 10 --horizon 200 --max_episodes 200".split(), 
         "car_racing": "--env car_racing --state_dim 4 --warm_up_steps 400 --total_steps 150000 --individual_learn_steps 100000 --patience 10 --eval_freq 1200 --horizon 200 --max_episodes 300".split(), 
