@@ -270,7 +270,9 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
         assert False, "Unknown Symbolic Regression method"
 
     # save learned dynamics to be used by the verifier
-    save_learned_dynamics(env_info.env_name, copy.deepcopy(learned_dynamic_model), stds=learned_stds)
+    save_learned_dynamics(env_info.env_name, copy.deepcopy(learned_dynamic_model), stds=copy.deepcopy(learned_stds))
+    for i in range(0, len(learned_dynamic_model)):
+        learned_dynamic_model[i] = str(learned_dynamic_model[i]).lower()
     return learned_dynamic_model, learned_stds
 
 
