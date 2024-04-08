@@ -137,7 +137,7 @@ class safe_agent:
             f"./results/sampled_strajectories/{env_info.env_name}/sac_{self.current_version}"
         )
         path.mkdir(parents=True, exist_ok=True)
-        pdb.set_trace()
+        # pdb.set_trace()
 
         fig_name = os.path.join(path, f"{self.neural_agent.num_timesteps}.png")
         print(f"saving safe agent trajectories to {fig_name}")

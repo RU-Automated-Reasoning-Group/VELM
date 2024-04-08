@@ -256,10 +256,6 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
                 parse_expr(reg.get_model_string(reg.model_, 5))
             )
         learned_stds = None
-
-        for i in range(0, len(learned_dynamic_model)):
-            learned_dynamic_model[i] = str(learned_dynamic_model[i]).lower()
-            learned_dynamic_model[i] = learned_dynamic_model[i].replace("**", "^")
     else:
         assert False, "Unknown Symbolic Regression method"
 
@@ -387,6 +383,10 @@ def train(args):
             learned_dynamic_model, learned_stds = learn_environment_model(
                 args, env_info, buffer=buffer
             )
+            while "nan" in learned_dynamic_model:
+                learned_dynamic_model, learned_stds = learn_environment_model(
+                    args, env_info, buffer=buffer
+                )
         else:
             assert False
         # pdb.set_trace()
@@ -472,6 +472,10 @@ def train(args):
                         learned_dynamic_model, learned_stds = learn_environment_model(
                             args, env_info, buffer=real_data.get_data_for_operon()
                         )
+                        while "nan" in learned_dynamic_model:
+                            learned_dynamic_model, learned_stds = learn_environment_model(
+                                args, env_info, buffer=real_data.get_data_for_operon()
+                            )
                         print("===== Constructing new simulated env ========")
                         simulated_env = make_simulated_env(
                             args.random,
@@ -536,7 +540,7 @@ def train(args):
                 ["VELM time", all_safe_time + all_dy_time],
             ]
             print(tabulate.tabulate(time_table))
-            pdb.set_trace()
+            # pdb.set_trace()
 
 
 if __name__ == "__main__":

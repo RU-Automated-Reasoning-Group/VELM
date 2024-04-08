@@ -53,9 +53,9 @@ class LinearProgNetwork(nn.Module):
         return self.program(y)
 
     def discrete_forward(self, x):
-        import pdb
+        # import pdb
 
-        pdb.set_trace()
+        # pdb.set_trace()
         return self.program(x)
 
     def interpret(self):

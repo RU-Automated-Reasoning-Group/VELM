@@ -641,9 +641,9 @@ class DynamicsLearner:
             self.dv = dv
         self.model2Torch()
         # print(self.pol_linear[0])
-        import pdb
+        # import pdb
 
-        pdb.set_trace()
+        # pdb.set_trace()
         for ep in range(num_episodes):
             o = self.dyn_env.reset()
             d = False

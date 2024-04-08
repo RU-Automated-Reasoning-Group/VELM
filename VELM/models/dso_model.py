@@ -163,6 +163,9 @@ def save_learned_dynamics(env_name, learned_dynamics, stds=None):
     path = pathlib.Path(f"results/learned_dynamics/{env_name}/")
     path.mkdir(parents=True, exist_ok=True)
 
+    for i in range(0, len(learned_dynamics)):
+        learned_dynamics[i] = str(learned_dynamics[i]).lower()
+        learned_dynamics[i] = learned_dynamics[i].replace("**", "^")
     with open(os.path.join(path, "model.txt"), "w+") as f:
         for equation in learned_dynamics:
             eq_str = str(equation)

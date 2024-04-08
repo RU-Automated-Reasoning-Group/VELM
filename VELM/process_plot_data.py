@@ -115,7 +115,8 @@ def propcess_plot_data(
                     real_violations[real_episode_idx] + result_violations[-1]
                 )  # calculate cumulative violations
             except:
-                pdb.set_trace()
+                pass
+                # pdb.set_trace()
             result_rewards.append(real_rewards[real_episode_idx])
 
             result_episode_idx += 1
