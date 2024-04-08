@@ -406,7 +406,7 @@ def train(args):
             )
             while "nan" in learned_dynamic_model:
                 print("learning again")
-                pdb.set_trace()
+                # pdb.set_trace()
                 print(learned_dynamic_model)
                 random_state += 1
                 learned_dynamic_model, learned_stds = learn_environment_model(
