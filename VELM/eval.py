@@ -13,11 +13,11 @@ def run_single_benchmark(benchmark: str):
         main_stable_baseline.train(train_args)
     except main_stable_baseline.FinishException:
         return
-    # except Exception as e:
+    except Exception as e:
         # import pdb
         # pdb.set_trace()
-        # print(e)
-        # print(f"{benchmark} exited unexpectedly")
+        print(e)
+        print(f"{benchmark} exited unexpectedly")
 
 def run_one_row(row: int):
     row2bench = {
@@ -30,8 +30,8 @@ def run_one_row(row: int):
         run_single_benchmark(b)
 
 def run_main(start: int, end: int):
-    # for row in range(start, end + 1):
-        # run_one_row(row)
+    for row in range(start, end + 1):
+        run_one_row(row)
     
     eval_plot()
 
@@ -135,8 +135,8 @@ def eval_plot():
     ax[7, 1].set_ylim([-100, 10000])
 
     ax[6, 2].set_ylim([-1000, 0])
-    ax[6, 2].set_xlim([0, 300])
-    ax[7, 2].set_xlim([0, 300])
+    ax[6, 2].set_xlim(left=0)
+    ax[7, 2].set_xlim(left=0)
     ax[7, 2].set_ylim([-100, 2000])
 
     fig.align_ylabels()
@@ -149,6 +149,6 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--end", type=int, default=3)
     args = parser.parse_args()
-    # run_single_benchmark("cartpole_swing")
+    # run_single_benchmark("car_racing")
     run_main(args.start, args.end)
     

@@ -10,7 +10,7 @@ class Gymnasium_CarRacingEnv(gym.Env):
         super().__init__()
 
         self.action_space = gym.spaces.Box(low=-1, high=1, shape=(2,))
-        self.observation_space = gym.spaces.Box(low=-5, high=5, shape=(4,))
+        self.observation_space = gym.spaces.Box(low=-10, high=10, shape=(4,))
 
         self.init_space = gym.spaces.Box(low=-0.1, high=0.1, shape=(4,))
 

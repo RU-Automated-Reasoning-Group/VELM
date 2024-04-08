@@ -209,7 +209,9 @@ int main(int argc, char *argv[])
       vector<vector<double>> reached_set = {
           {inter_box[0].inf(), inter_box[0].sup()},
           {inter_box[1].inf(), inter_box[1].sup()}};
-      safe_loss += calculate_safe_loss(reached_set, unsafe_set);
+
+      safe_loss = safe_loss + my_relu(reached_set[0][1]);
+      // safe_loss += calculate_safe_loss(reached_set, unsafe_set);
       if (plot || print_safe_sets)
       {
         cout << inter_box[0].inf() << " " << inter_box[0].sup() << " "

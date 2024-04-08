@@ -2,7 +2,7 @@ mkdir -p results/programs
 
 cd POLAR_Tool/examples
 
-# cd acc_spice && make clean && make && cd ..
+cd acc_spice && make clean && make && cd ..
 cd pendulum && make clean && make && cd ..
 cd obstacle_mid && make clean && make && cd ..
 cd cartpole && make clean && make && cd ..

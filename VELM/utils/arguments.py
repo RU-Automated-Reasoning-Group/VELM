@@ -104,7 +104,7 @@ def get_args(env: str) -> List:
         "pendulum": "--env pendulum --state_dim 2 --warm_up_steps 200 --total_steps 150000 --individual_learn_steps 150000 --patience 3 --eval_freq 1000 --horizon 100 --max_episodes 200".split(),
         "road": "--env road --state_dim 2 --warm_up_steps 300 --total_steps 150000 --individual_learn_steps 150000 --patience 10 --lr 1e-4".split(),
         "cartpole": "--env cartpole --state_dim 4 --warm_up_steps 800 --total_steps 100000 --individual_learn_steps 100000 --lr 1e-4 --sr_method operon --patience 10 --horizon 200 --max_episodes 200".split(), 
-        "car_racing": "--env car_racing --state_dim 4 --warm_up_steps 400 --total_steps 1500000 --individual_learn_steps 600000 --patience 10 --eval_freq 1200 --horizon 200 --max_episodes 600".split(), 
+        "car_racing": "--env car_racing --state_dim 4 --warm_up_steps 400 --total_steps 150000 --individual_learn_steps 100000 --patience 10 --eval_freq 1200 --horizon 200 --max_episodes 300".split(), 
         "road_2d": "--env road_2d --state_dim 4 --warm_up_steps 600 --total_steps 150000 --individual_learn_steps 100000 --patience 10 --eval_freq 1500 --horizon 300 --max_episodes 100".split(), 
         "noisy_road_2d": "--env noisy_road_2d --state_dim 4 --warm_up_steps 600 --total_steps 1500000 --individual_learn_steps 600000 --patience 10 --eval_freq 1500 --random".split(), 
         "cartpole_move": "--env cartpole_move --state_dim 4 --warm_up_steps 800 --total_steps 150000 --individual_learn_steps 100000 --lr 1e-4 --sr_method operon --patience 10 --horizon 100 --max_episodes 300".split(), 
