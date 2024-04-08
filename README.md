@@ -3,10 +3,10 @@
 ##  Introduction
 We implement the Verified Exploration through Learned Models (VELM) in this artifact. Make sure Docker is installed on your system. 
 
-For some of the commands, we list their estimated running time. These measurements are performed on a desktop computer with Intel I7-12700K CPU and 32GB RAM. The running time can very if tested on other machines.
+For some of the commands, we list their estimated running time. These measurements are performed on a MacBook Pro Intel I5 CPU (4 cores) and 16GB RAM. The running time can very if tested on other machines.
 
 ## Installation
-Follow the following instructions to build a new Docker image or use our provided image.
+Follow the following instructions to build a new Docker image or use our provided image. Note this process will create a Docker container named `velm_container` that might have the the same name with your existing containers.
 
 ### Using the Provided Docker Image
 1. Run the following command to download the image to local machine
@@ -16,7 +16,7 @@ Follow the following instructions to build a new Docker image or use our provide
 
 2. Start a new container from the provided image
     ```
-    docker run --platform=linux/x86_64 -it wyuning/velm
+    docker run --platform=linux/x86_64 -it --name velm_container wyuning/velm
     ```
 
     At this point, the container should be automatically in the VELM directory, please follow the instructions in the **Reproducibility Instructions** section.
@@ -31,7 +31,7 @@ If the provided Docker image doesn't work for you for any reason, you can build 
 
 2. Start a new container from this image
     ```
-    docker run -it velm
+    docker run -it --name velm_container velm
     ```
 
     At this point, the container should be automatically in the VELM directory, please follow the instructions in the **Reproducibility Instructions** section.
@@ -62,7 +62,30 @@ In this section, we brief introduce major components of our code.
 
 
 ## Reproducibility Instructions
+
+### Running Provided Evaluation script
+We provide an evaluation script named `eval.py` that will run benchmarks in batches.
 ```
 python3 eval.py --start [x] --end [y] 
 ```
+
+The evaluation will generate a figure named `eval.png`. This figure can be copied out of the Docker container to the current directory using the following command. Note that this command should be run outside the container, for example in another terminal.
+```
+docker cp velm_container:/VELM/eval.png .
+``` 
+
+
+### Running Individual benchmarks
+To run an individual benchmark, please run
+```
+python3 main_stable_baseline.py <benchmark name>
+```
+where benchmark name can be `pendulum`, `obstacle`, `obstacle_mid`, `road_2d`, `cartpole`, `cartpole_move`, `cartpole_swing`, `lalo`, `car_racing`, `acc`
+
+After running invidual benchmark, the figure can be updated with
+```
+python3 eval.py
+```
+
+Here we list the estimated time for each individual benchmarks
 

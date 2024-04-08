@@ -21,6 +21,8 @@ def run_single_benchmark(benchmark: str):
         print(f"{benchmark} exited unexpectedly")
 
 def run_one_row(row: int):
+    if row == 0:
+        return
     row2bench = {
         1: ["pendulum", "acc", "obstacle_mid", "cartpole"],
         2: ["obstacle", "road_2d", "car_racing", "cartpole_move"],
@@ -148,8 +150,8 @@ def eval_plot():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=int, default=1)
-    parser.add_argument("--end", type=int, default=3)
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--end", type=int, default=0)
     args = parser.parse_args()
     # run_single_benchmark("car_racing")
     run_main(args.start, args.end)
