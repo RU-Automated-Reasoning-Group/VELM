@@ -154,5 +154,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # run_single_benchmark("acc")
     # exit()
-    run_main(args.row, args.row + 1)
+    run_main(args.row, args.row)
     

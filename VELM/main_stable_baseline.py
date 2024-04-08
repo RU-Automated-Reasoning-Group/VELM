@@ -210,7 +210,9 @@ def check_model_accurate(
     return result
 
 
-def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
+def learn_environment_model(
+    args, env_info, buffer=None, neural_agent=None, random_state=4
+):
     # learn a new environment model
     if args.sr_method == "DSO":
         assert args.random
@@ -225,7 +227,7 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
             )
             all_models.append(learned_dynamic_model)
             all_stds.append(learned_stds)
-        
+
         best_model_idx = np.argmin([np.mean(stds) for stds in all_stds])
         learned_dynamic_model = all_models[best_model_idx]
         learned_stds = all_stds[best_model_idx]
@@ -240,7 +242,7 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
             objectives=["mse"],
             symbolic_mode=False,
             model_selection_criterion="mean_squared_error",
-            random_state=4,
+            random_state=random_state,
             generations=10000,
             population_size=5000,
         )
@@ -262,6 +264,8 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
             Y = y_list[i]
             reg.fit(X, Y)
             # pdb.set_trace()
+            # if "nan" in parse_expr(reg.get_model_string(reg.model_, 5)):
+            # pdb.set_trace()
             learned_dynamic_model.append(
                 parse_expr(reg.get_model_string(reg.model_, 5))
             )
@@ -270,7 +274,11 @@ def learn_environment_model(args, env_info, buffer=None, neural_agent=None):
         assert False, "Unknown Symbolic Regression method"
 
     # save learned dynamics to be used by the verifier
-    save_learned_dynamics(env_info.env_name, copy.deepcopy(learned_dynamic_model), stds=copy.deepcopy(learned_stds))
+    save_learned_dynamics(
+        env_info.env_name,
+        copy.deepcopy(learned_dynamic_model),
+        stds=copy.deepcopy(learned_stds),
+    )
     for i in range(0, len(learned_dynamic_model)):
         learned_dynamic_model[i] = str(learned_dynamic_model[i]).lower()
     return learned_dynamic_model, learned_stds
@@ -392,12 +400,17 @@ def train(args):
             )
         elif args.sr_method == "operon":
             real_data.add_new_data_operon(buffer)
+            random_state = 4
             learned_dynamic_model, learned_stds = learn_environment_model(
-                args, env_info, buffer=buffer
+                args, env_info, buffer=buffer, random_state=random_state
             )
             while "nan" in learned_dynamic_model:
+                print("learning again")
+                pdb.set_trace()
+                print(learned_dynamic_model)
+                random_state += 1
                 learned_dynamic_model, learned_stds = learn_environment_model(
-                    args, env_info, buffer=buffer
+                    args, env_info, buffer=buffer, random_state=random_state
                 )
         else:
             assert False
@@ -481,12 +494,23 @@ def train(args):
                     if args.sr_method == "operon":
                         # learn a new model
                         print("===== Learning a new environment model ========")
+                        random_state = 4
                         learned_dynamic_model, learned_stds = learn_environment_model(
-                            args, env_info, buffer=real_data.get_data_for_operon()
+                            args,
+                            env_info,
+                            buffer=real_data.get_data_for_operon(),
+                            random_state=random_state,
                         )
                         while "nan" in learned_dynamic_model:
-                            learned_dynamic_model, learned_stds = learn_environment_model(
-                                args, env_info, buffer=real_data.get_data_for_operon()
+                            random_state += 1
+                            (
+                                learned_dynamic_model,
+                                learned_stds,
+                            ) = learn_environment_model(
+                                args,
+                                env_info,
+                                buffer=real_data.get_data_for_operon(),
+                                random_state=random_state,
                             )
                         print("===== Constructing new simulated env ========")
                         simulated_env = make_simulated_env(
