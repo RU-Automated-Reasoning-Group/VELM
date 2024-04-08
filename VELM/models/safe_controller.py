@@ -105,7 +105,10 @@ class safe_agent:
                 plt.plot([x, next_x], [y, next_y], color=color)
 
                 state = next_state
-                copy_buffer.append((state.copy(), action.copy(), next_state.copy()))
+                if np.any(state <= real_env.observation_space.low) or np.any(state >= real_env.observation_space.high) or \
+                   np.any(next_state <= real_env.observation_space.low) or np.any(state >= real_env.observation_space.high):
+                    # only add sas tuple to buffer if states are not clipped.
+                    copy_buffer.append((state.copy(), action.copy(), next_state.copy()))
                 x, y = plot_state_to_xy(state)
                 xs.append(x)
                 ys.append(y)

@@ -66,10 +66,18 @@ In this section, we brief introduce major components of our code.
 ### Running Provided Evaluation script
 We provide an evaluation script named `eval.py` that will run benchmarks in batches.
 ```
-python3 eval.py --start [x] --end [y] 
+python3 eval.py --row <x>
 ```
+where x can be 1, 2, 3, meaning running the benchmarks in the x-th row in the figure 4 of the paper..
+Here we list the estimated time for running each row
+| Row    | Time |
+| -------- | ------- |
+| 1  | 2 hours    |
+| 2 |  2 hours    |
+| 3    | 1 hour   |
 
-The evaluation will generate a figure named `eval.png`. This figure can be copied out of the Docker container to the current directory using the following command. Note that this command should be run outside the container, for example in another terminal.
+
+The evaluation script will also generate a figure named `eval.png`. This figure can be copied out of the Docker container to the current directory using the following command. Note that this command should be run outside the container, for example in another terminal.
 ```
 docker cp velm_container:/VELM/eval.png .
 ``` 
@@ -86,6 +94,4 @@ After running invidual benchmark, the figure can be updated with
 ```
 python3 eval.py
 ```
-
-Here we list the estimated time for each individual benchmarks
 
