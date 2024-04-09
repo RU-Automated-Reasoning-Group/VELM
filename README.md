@@ -68,12 +68,14 @@ We provide an evaluation script named `eval.py` that will run benchmarks in batc
 ```
 python3 eval.py --row <x>
 ```
-where x can be 1, 2, 3, meaning running the benchmarks in the x-th row in the figure 4 of the paper..
+where x can be 1, 2, 3, meaning running the benchmarks in the x-th row in the figure 4 of the paper. We recommend reviewers first try x = 3 to quickly get started with the artifact.
+
+
 Here we list the estimated time for running each row
 | Row    | Time |
 | -------- | ------- |
-| 1  | 2 hours    |
-| 2 |  2 hours    |
+| 1  | 4.5 hours    |
+| 2 |  4.5 hours    |
 | 3    | 1 hour   |
 
 
@@ -95,3 +97,14 @@ After running invidual benchmark, the figure can be updated with
 python3 eval.py
 ```
 
+## Extending to new benchmarks
+
+In this section, we provide necessary steps to adapt VELM on other benchmarks. There are 5 steps in total.
+
+1. Define the new benchmark using Gymnasium similar to `environments/gymnasium_cartpole.py`. Specifically, users need to specify the initial region, state space, action space and system dynamic functions. Create a simulated environment for this benchmark similar to `environments/gymnasium_cartpole_simulte.py`. The simulated environment is to let the agent learn using the learned dynamics. Finally, import these two Gymnasium environments in `utils/get_env.py`.
+
+2. Define the verification program for the new benchmark similar to `POLAR_Tool/examples/cartpole/cartpole.cpp`. Here, user needs to specify the safety constraints, initial region and the length of each trajectory. User also needs to create a `Makefile` that is similar to `POLAR_Tool/examples/cartpole/Makefile` to compile the compiled program to the top-level directory.
+
+3. Define the name and hyperparameters for the new benchmark in `utils/arguments.py`. Hyperparameters include hyperparameters for the SAC agent (learning rate, model hidden unit size), the choice of symbolic regression method and so on.
+
+4. Run the benchmark using the command provided in the **Running Individual benchmarks** but with the new environments name.
