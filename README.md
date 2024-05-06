@@ -88,11 +88,11 @@ docker cp velm_container:/VELM/eval.png .
 ### Running Individual benchmarks
 To run an individual benchmark, please run
 ```
-python3 main_stable_baseline.py <benchmark name>
+python3 eval.py --single <benchmark name>
 ```
 where benchmark name can be `pendulum`, `obstacle`, `obstacle_mid`, `road_2d`, `cartpole`, `cartpole_move`, `cartpole_swing`, `lalo`, `car_racing`, `acc`
 
-After running invidual benchmark, the figure can be updated with
+After running invidual benchmark, the figure should be automatically updated. The figure can be updated manually with
 ```
 python3 eval.py
 ```

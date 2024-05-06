@@ -45,6 +45,7 @@ operon_list = [
     "obstacle",
     "obstacle_mid",
     "road_2d",
+    "car_racing"
 ]
 
 
