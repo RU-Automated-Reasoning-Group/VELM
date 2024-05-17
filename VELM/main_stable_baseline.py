@@ -34,6 +34,8 @@ from utils.gym_env import GymEnv
 from verification.VEL.lagrange_lib import run_lagrange
 from verification.VEL.safe_violation_callback import SafeViolationLogCallback
 
+import time
+
 operon_list = [
     "cartpole",
     "tora",
@@ -52,6 +54,39 @@ operon_list = [
 class FinishException(Exception):
     pass
 
+class timer:
+    def __init__(self):
+        self.model_time = 0.0
+        self.neural_time = 0.0
+        self.velm_time = 0.0
+        self.start = None
+        self.status = None
+    
+    def set_status(self, status):
+        self.status = status
+
+    def start_time(self):
+        self.start = time.time()
+    
+    def record_model_time(self):
+        self.model_time = self.model_time + (time.time() - self.start)
+        self.start_time()
+
+    def record_neural_time(self):
+        self.neural_time = self.neural_time + (time.time() - self.start)
+        self.start_time()
+
+    def record_velm_time(self):
+        self.velm_time = self.velm_time + (time.time() - self.start)
+        self.start_time()
+    
+    def record_final_time(self):
+        if self.status == "velm":
+            self.record_neural_time()
+        elif self.status == "neural":
+            self.record_neural_time()
+        else:
+            assert False
 
 class OurLogger(Logger):
     def __init__(self, folder, output_formats, max_episodes, env_name):
@@ -61,6 +96,7 @@ class OurLogger(Logger):
         self.max_episodes = max_episodes
         self.protected_episodes = 0
         self.env_name = env_name
+        self.timer = timer()
 
     def record(self, key, value, exclude=None):
         super().record(key, value, exclude)
@@ -78,6 +114,7 @@ class OurLogger(Logger):
 
     def check_terminate(self):
         if len(self.reward_logs) >= self.max_episodes and self.protected_episodes >= 1:
+            self.timer.record_final_time()
             self.final_write()
             raise FinishException()
 
@@ -87,6 +124,11 @@ class OurLogger(Logger):
         with open(f"logs/{self.env_name}.txt", "w") as f:
             for rwd, violation in zip(self.reward_logs, self.violation_logs):
                 f.write(f"{rwd} {violation}\n")
+        
+        with open(f"logs/time_{self.env_name}.txt", "w") as f:
+            f.write(f"model time {self.timer.model_time}\n")
+            f.write(f"neural time {self.timer.neural_time}\n")
+            f.write(f"velm time {self.timer.velm_time}\n")
 
     def manual_add(self, rwd, violations):
         self.reward_logs.append(rwd)
@@ -329,6 +371,7 @@ def train(args):
             max_episodes=args.max_episodes,
             env_name=args.env,
         )
+        logger.timer.start_time()
         neural_agent.set_logger(logger)
 
         # gather data to train the first environment model
@@ -416,6 +459,8 @@ def train(args):
         else:
             assert False
         # pdb.set_trace()
+    
+    logger.timer.record_model_time()
     print(
         f"========= Learning Dynamic Time Is {time.time() - dy_t0} seconds =============="
     )
@@ -441,6 +486,8 @@ def train(args):
     first = True
     while neural_agent.num_timesteps < args.total_steps:
         if train_on_real_data is True:
+            logger.timer.set_status("velm")
+
             train_on_real_data = False
 
             safe_t0 = time.time()
@@ -486,6 +533,9 @@ def train(args):
                 real_data.add_new_safe_data(new_data)
             except verification.VEL.improve_lib.EvalControllerFailure as e:
                 must_learn_new_model = True
+            
+            logger.timer.record_velm_time()
+
             if not args.random:
                 # currently doesn't check with std
                 if (
@@ -529,7 +579,10 @@ def train(args):
                         )
                     else:
                         assert False, "DSO model is not accurate"
+            
+            logger.timer.record_model_time()
         else:
+            logger.timer.set_status("neural")
             train_on_real_data = True
 
             # define the new eval call back and stop when converged
@@ -577,6 +630,8 @@ def train(args):
                 ["VELM time", all_safe_time + all_dy_time],
             ]
             print(tabulate.tabulate(time_table))
+
+            logger.timer.record_neural_time()
             # pdb.set_trace()
 
 
