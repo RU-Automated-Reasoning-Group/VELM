@@ -418,6 +418,10 @@ def train(args):
 
             print("episodes_rwd", episodes_rwd)
             print("episodes unsafe", episodes_unsafe)
+
+            for rwd, violations in zip(episode_rwd, episodes_unsafe):
+                logger.manual_add(rwd, violations)
+
             # exit()
 
     # Use dso to learn the dynamic model
@@ -511,7 +515,7 @@ def train(args):
                     simulated_env_info,
                     learned_dynamic_model,
                     learned_stds,
-                    episodes=2,
+                    episodes=10,
                     plot_unsafe_set=env_info.plot_other_components,
                     plot_state_to_xy=env_info.plot_state_to_xy,
                 )
